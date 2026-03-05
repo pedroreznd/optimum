@@ -2,8 +2,7 @@
 
 Optimum — A real-time stock market dashboard built with React, TypeScript, and TradingView Lightweight Charts.
 
-![Dashboard preview](./docs/dashboard-preview.png)
-<!-- TODO: add screenshot -->
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/caa11e03-9c22-4409-bdb6-d832fdb26269" />
 
 ## Features
 
@@ -36,11 +35,13 @@ Optimum — A real-time stock market dashboard built with React, TypeScript, and
 
 1. Clone the repository.
 2. Install dependencies:
+   
    ```bash
    npm install
    ```
-3. Copy `.env.example` to `.env` and add your Finnhub API key.
-4. Start the development server:
+4. Copy `.env.example` to `.env` and add your Finnhub API key.
+5. Start the development server:
+   
    ```bash
    npm run dev
    ```
