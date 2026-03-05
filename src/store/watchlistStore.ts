@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
+/**
+ * Watchlist state with localStorage persistence for cross-session continuity.
+ */
 interface WatchlistState {
   symbols: string[];
   addSymbol: (symbol: string) => void;

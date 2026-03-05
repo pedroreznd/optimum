@@ -4,7 +4,11 @@ import { useWebSocket } from '@/hooks/useWebSocket';
 import { useWatchlistStore } from '@/store/watchlistStore';
 import { useMarketDataStore } from '@/store/marketDataStore';
 
-export default function MarketDataProvider(): null {
+/**
+ * Single owner of the market WebSocket subscription graph.
+ * It merges ticker and watchlist symbols, then writes incoming trades into `marketDataStore`.
+ */
+export default function MarketDataProvider(): JSX.Element | null {
   const watchlistSymbols = useWatchlistStore((state) => state.symbols);
   const setTrade = useMarketDataStore((state) => state.setTrade);
   const allSymbols = useMemo(

@@ -11,7 +11,7 @@ import IndicatorPanel from '@/components/features/IndicatorPanel';
 import Drawer from '@/components/ui/Drawer';
 import Skeleton from '@/components/ui/Skeleton';
 import Toast, { useToastStore } from '@/components/ui/Toast';
-import { POPULAR_SYMBOLS } from '@/api/mockData';
+import { POPULAR_SYMBOLS } from '@/mock/mockData';
 import { useStockQuote } from '@/hooks/useStockQuote';
 import type { MainChartSyncBridge } from '@/lib/chartSync';
 import { formatCompact, formatCurrency, formatPercent } from '@/lib/utils';

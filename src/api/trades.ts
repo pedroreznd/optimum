@@ -1,4 +1,4 @@
-import { getApproximatePriceForSymbol } from '@/api/mockData';
+import { getApproximatePriceForSymbol } from '@/mock/mockData';
 
 interface FinnhubTradesResponse {
   data: Array<{

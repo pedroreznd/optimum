@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { getMockQuote } from '@/api/mockData';
+import { getMockQuote } from '@/mock/mockData';
 import { formatCompact, formatCurrency, formatPercent } from '@/lib/utils';
 import type { CandleDataPoint } from '@/types/finnhub';
 

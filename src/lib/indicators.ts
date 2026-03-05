@@ -39,6 +39,12 @@ const calculateEMA = (values: number[], period: number): Array<number | null> =>
   return output;
 };
 
+/**
+ * Computes RSI points from candle closes using Wilder smoothing over `period`.
+ * @param candles Ordered candle series with close prices.
+ * @param period Lookback window used for average gain/loss smoothing.
+ * @returns Time-aligned RSI points (0-100) starting at the first complete window.
+ */
 export const calculateRSI = (candles: CandleDataPoint[], period = 14): IndicatorLinePoint[] => {
   if (candles.length <= period) return [];
 
@@ -138,6 +144,13 @@ export const calculateMACD = (
   return result;
 };
 
+/**
+ * Computes Bollinger Bands from rolling close-price windows.
+ * @param candles Ordered candle series with close prices.
+ * @param period Window size for the rolling mean and standard deviation.
+ * @param stdDevMultiplier Standard deviation multiplier used for upper/lower bands.
+ * @returns Time-aligned upper/middle/lower band points for each complete window.
+ */
 export const calculateBollingerBands = (
   candles: CandleDataPoint[],
   period = 20,
@@ -169,6 +182,12 @@ export const calculateBollingerBands = (
   return result;
 };
 
+/**
+ * Computes a simple moving average of candle volume with a rolling sum window.
+ * @param candles Ordered candle series with volume values.
+ * @param period Window size used for the volume SMA.
+ * @returns Time-aligned volume SMA points for each complete window.
+ */
 export const calculateVolumeSMA = (candles: CandleDataPoint[], period = 20): IndicatorLinePoint[] => {
   if (candles.length < period) return [];
 

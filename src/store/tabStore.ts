@@ -7,6 +7,10 @@ export interface StockTab {
   companyName: string;
 }
 
+/**
+ * Tab state for the stock workspace.
+ * Persists open tabs and active symbol so sessions restore after reload.
+ */
 interface TabState {
   tabs: StockTab[];
   activeSymbol: string | null;
@@ -22,6 +26,10 @@ export const useTabStore = create<TabState>()(
     (set, get) => ({
       tabs: [],
       activeSymbol: null,
+      /**
+       * Opens a tab when not already present and makes it active.
+       * Returns `false` when the max tab cap (8) has been reached.
+       */
       openTab: (stock) => {
         const state = get();
         const existing = state.tabs.find((tab) => tab.symbol === stock.symbol);

@@ -5,7 +5,7 @@ import type {
   FinnhubWsMessage,
   Timeframe
 } from '@/types/finnhub';
-import { getMockCandles, getMockQuote, getMockWsTrade, SEARCH_RESULTS } from '@/api/mockData';
+import { getMockCandles, getMockQuote, getMockWsTrade, SEARCH_RESULTS } from '@/mock/mockData';
 
 const API_BASE_URL = import.meta.env.VITE_FINNHUB_API_BASE_URL;
 const WS_URL = import.meta.env.VITE_FINNHUB_WS_URL;
