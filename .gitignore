@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Vite generated artifacts
+*.local
+vite.config.js
+vite.config.d.ts
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# Environment variables — never commit real keys
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

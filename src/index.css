@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background-base: #080808;
+  --color-background-surface: #0d0d0d;
+  --color-background-overlay: #1a1a1a;
+  --color-border-subtle: #1f1f1f;
+  --color-border-muted: #3f3f46;
+  --color-text-primary: #f5f5f5;
+  --color-text-secondary: #71717a;
+  --color-text-muted: #3f3f46;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-positive: #22c55e;
+  --color-negative: #ef4444;
+  --color-warning: #f59e0b;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--color-background-base);
+  color: var(--color-text-primary);
+}
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
