@@ -97,6 +97,8 @@ const TickerItem = React.memo(
 );
 
 export default function TickerTape({ onOpenTab }: TickerTapeProps): JSX.Element {
+  // Imperative refs map lets us patch DOM text/class directly per symbol tick.
+  // This avoids React state updates for each WebSocket event across marquee items.
   const itemRefsMap = useRef<Map<string, TickerItemRefs[]>>(new Map());
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -178,12 +180,13 @@ export default function TickerTape({ onOpenTab }: TickerTapeProps): JSX.Element 
       });
     };
 
+    // Subscribe once and apply tick updates directly to refs for a zero-re-render hot path.
     const unsub = useMarketDataStore.subscribe(() => {
       applyTrades(latestTradesCache);
     });
 
     return unsub;
-  }, []); // subscribe once, never resubscribe
+  }, []);
 
   useEffect(() => {
     const checkOverflow = (): void => {

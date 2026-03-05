@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { getMockQuote, POPULAR_SYMBOLS } from '@/api/mockData';
+import { getMockQuote, POPULAR_SYMBOLS } from '@/mock/mockData';
 import { useToastStore } from '@/components/ui/Toast';
 import { useTabStore } from '@/store/tabStore';
 import { useWatchlistStore } from '@/store/watchlistStore';

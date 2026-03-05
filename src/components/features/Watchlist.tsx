@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { getMockQuote } from '@/api/mockData';
+import { getMockQuote } from '@/mock/mockData';
 import Skeleton from '@/components/ui/Skeleton';
 import Sparkline from '@/components/ui/Sparkline';
 import { useToastStore } from '@/components/ui/Toast';
