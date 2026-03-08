@@ -27,7 +27,7 @@ export default function StockTabs(): JSX.Element {
                 aria-label={`Close ${tab.symbol}`}
                 title={`Close ${tab.symbol}`}
               >
-                <FiX className="h-3 w-3" />
+                <FiX className="h-4 w-4" />
               </button>
             </div>
           );
