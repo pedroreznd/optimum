@@ -2,7 +2,7 @@
 
 Optimum — A real-time stock market dashboard built with React, TypeScript, and TradingView Lightweight Charts.
 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/78eb1b60-3f79-4942-a464-d75c46f05088" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/ed3ca717-c838-4e4f-8b37-8cda30bb73b0" />
 
 ## Features
 
