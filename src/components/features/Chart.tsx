@@ -205,7 +205,10 @@ export default function Chart({
       seriesRef.current = candlestickSeries;
     }
 
-    chartRef.current.timeScale().fitContent();
+    const chartInstance = chartRef.current;
+    requestAnimationFrame(() => {
+      chartInstance.timeScale().fitContent();
+    });
   }, [normalizedCandles, mode, loading, error, lineData, candleData]);
 
   return (
