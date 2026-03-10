@@ -7,29 +7,29 @@ import type {
   Timeframe
 } from '@/types/finnhub';
 
-export const POPULAR_SYMBOLS: StockListItem[] = [
-  { symbol: 'AAPL', name: 'Apple Inc' },
-  { symbol: 'MSFT', name: 'Microsoft Corp' },
-  { symbol: 'NVDA', name: 'NVIDIA Corp' },
-  { symbol: 'AMZN', name: 'Amazon.com Inc' },
-  { symbol: 'GOOGL', name: 'Alphabet Inc' },
-  { symbol: 'META', name: 'Meta Platforms Inc' },
-  { symbol: 'TSLA', name: 'Tesla Inc' },
-  { symbol: 'ORCL', name: 'Oracle Corp' },
-  { symbol: 'JPM', name: 'JPMorgan Chase & Co' },
-  { symbol: 'BAC', name: 'Bank of America Corp' },
-  { symbol: 'GS', name: 'Goldman Sachs Group Inc' },
-  { symbol: 'WFC', name: 'Wells Fargo & Co' },
-  { symbol: 'XOM', name: 'Exxon Mobil Corp' },
-  { symbol: 'CVX', name: 'Chevron Corp' },
-  { symbol: 'COP', name: 'ConocoPhillips' },
-  { symbol: 'PFE', name: 'Pfizer Inc' },
-  { symbol: 'JNJ', name: 'Johnson & Johnson' },
-  { symbol: 'MRK', name: 'Merck & Co Inc' },
-  { symbol: 'UNH', name: 'UnitedHealth Group Inc' },
-  { symbol: 'ABBV', name: 'AbbVie Inc' },
-  { symbol: 'KO', name: 'Coca-Cola Co' },
-  { symbol: 'WMT', name: 'Walmart Inc' }
+export const POPULAR_SYMBOLS: (StockListItem & { change: number })[] = [
+  { symbol: 'AAPL', name: 'Apple Inc', change: 0.54 },
+  { symbol: 'MSFT', name: 'Microsoft Corp', change: -0.42 },
+  { symbol: 'NVDA', name: 'NVIDIA Corp', change: 0.94 },
+  { symbol: 'AMZN', name: 'Amazon.com Inc', change: -0.2 },
+  { symbol: 'GOOGL', name: 'Alphabet Inc', change: 0.36 },
+  { symbol: 'META', name: 'Meta Platforms Inc', change: 0.63 },
+  { symbol: 'TSLA', name: 'Tesla Inc', change: -1.44 },
+  { symbol: 'ORCL', name: 'Oracle Corp', change: 0.59 },
+  { symbol: 'JPM', name: 'JPMorgan Chase & Co', change: -0.23 },
+  { symbol: 'BAC', name: 'Bank of America Corp', change: 0.31 },
+  { symbol: 'GS', name: 'Goldman Sachs Group Inc', change: -0.5 },
+  { symbol: 'WFC', name: 'Wells Fargo & Co', change: -0.31 },
+  { symbol: 'XOM', name: 'Exxon Mobil Corp', change: 0.38 },
+  { symbol: 'CVX', name: 'Chevron Corp', change: -0.4 },
+  { symbol: 'COP', name: 'ConocoPhillips', change: 0.82 },
+  { symbol: 'PFE', name: 'Pfizer Inc', change: -0.3 },
+  { symbol: 'JNJ', name: 'Johnson & Johnson', change: 0.26 },
+  { symbol: 'MRK', name: 'Merck & Co Inc', change: -0.41 },
+  { symbol: 'UNH', name: 'UnitedHealth Group Inc', change: 0.36 },
+  { symbol: 'ABBV', name: 'AbbVie Inc', change: 0.33 },
+  { symbol: 'KO', name: 'Coca-Cola Co', change: 0.18 },
+  { symbol: 'WMT', name: 'Walmart Inc', change: 0.4 }
 ];
 
 export const SEARCH_RESULTS: FinnhubSearchResponse = {
@@ -91,16 +91,23 @@ export const getMockQuote = (symbol: string): FinnhubQuote => {
 };
 
 export const getMockCandles = (symbol: string, timeframe: Timeframe): FinnhubCandles => {
-  const pointsByTimeframe: Record<Timeframe, number> = {
-    '1D': 24,
-    '1W': 7,
-    '1M': 30,
-    '3M': 90
+  const intervalByTimeframe: Record<Timeframe, number> = {
+    '1D': 60,
+    '1W': 5 * 60,
+    '1M': 60 * 60,
+    '3M': 24 * 60 * 60,
   };
 
-  const points = pointsByTimeframe[timeframe];
+  const countByTimeframe: Record<Timeframe, number> = {
+    '1D': 390,
+    '1W': 390,
+    '1M': 720,
+    '3M': 90,
+  };
+
+  const count = countByTimeframe[timeframe];
+  const interval = intervalByTimeframe[timeframe];
   const now = Math.floor(Date.now() / 1000);
-  const secondsStep = timeframe === '1D' ? 60 * 60 : 24 * 60 * 60;
   const basePrice = (quoteSeed[symbol]?.c ?? 100) - 5;
 
   const c: number[] = [];
@@ -112,13 +119,15 @@ export const getMockCandles = (symbol: string, timeframe: Timeframe): FinnhubCan
 
   let current = basePrice;
 
-  for (let i = points; i > 0; i -= 1) {
-    const timestamp = now - i * secondsStep;
+  for (let i = count; i > 0; i -= 1) {
+    const timestamp = now - i * interval;
     const open = current;
-    const drift = (Math.random() - 0.48) * 4;
-    const close = Math.max(1, open + drift);
-    const high = Math.max(open, close) + Math.random() * 1.5;
-    const low = Math.min(open, close) - Math.random() * 1.5;
+    const volatility = basePrice * 0.002;
+    const drift = (Math.random() - 0.48) * volatility;
+    const close = Math.max(basePrice * 0.01, open + drift);
+    const wick = volatility * 0.5;
+    const high = Math.max(open, close) + Math.random() * wick;
+    const low = Math.max(basePrice * 0.01, Math.min(open, close) - Math.random() * wick);
 
     o.push(Number(open.toFixed(2)));
     c.push(Number(close.toFixed(2)));

@@ -1,10 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Marquee from 'react-fast-marquee';
 import { formatCurrency, formatPercent } from '@/lib/utils';
+import { CRYPTO_COINS } from '@/mock/cryptoData';
+import { POPULAR_SYMBOLS } from '@/mock/mockData';
 import { latestTradesCache, useMarketDataStore } from '@/store/marketDataStore';
 
 interface TickerTapeProps {
   onOpenTab: (symbol: string) => void;
+  market?: 'stocks' | 'crypto';
 }
 
 interface TickerItemProps {
@@ -42,10 +45,47 @@ export const TICKER_SYMBOLS = [
   'PG',
 ];
 
+export const CRYPTO_SYMBOLS = [
+  'BTC',
+  'ETH',
+  'BNB',
+  'SOL',
+  'XRP',
+  'ADA',
+  'DOGE',
+  'AVAX',
+  'DOT',
+  'MATIC',
+  'LINK',
+  'UNI',
+  'LTC',
+  'ATOM',
+  'XLM',
+];
+
+const getInitialChange = (symbol: string, market: 'stocks' | 'crypto'): number | null => {
+  if (market === 'crypto') {
+    return CRYPTO_COINS.find((c) => c.symbol === symbol)?.change ?? null;
+  }
+  return POPULAR_SYMBOLS.find((s) => s.symbol === symbol)?.change ?? null;
+};
+
 const getPriceWidth = (symbol: string): string => {
-  // const highPrice = ['NVDA', 'GOOGL', 'AMZN', 'META', 'TSLA'];
-  const midPrice = ['AAPL', 'MSFT', 'JPM', 'V', 'MA', 'UNH', 'XOM', 'WMT'];
-  if (midPrice.includes(symbol)) return 'w-[84px]';
+  const highStocks = ['NVDA', 'GOOGL', 'AMZN', 'META', 'TSLA'];
+  const midStocks = ['AAPL', 'MSFT', 'JPM', 'V', 'MA', 'UNH', 'XOM', 'WMT'];
+  const highCrypto = ['BTC'];
+  const midHighCrypto = ['ETH', 'BNB'];
+  const midCrypto = ['SOL', 'AVAX', 'LTC'];
+  const microCrypto = ['LINK', 'UNI', 'ATOM', 'DOT'];
+  const lowCrypto = ['XRP', 'ADA', 'DOGE', 'MATIC', 'XLM'];
+
+  if (highCrypto.includes(symbol)) return 'w-[96px]';
+  if (midHighCrypto.includes(symbol)) return 'w-[70px]';
+  if (midCrypto.includes(symbol)) return 'w-[72px]';
+  if (microCrypto.includes(symbol)) return 'w-[60px]';
+  if (lowCrypto.includes(symbol)) return 'w-[64px]';
+  if (highStocks.includes(symbol)) return 'w-[80px]';
+  if (midStocks.includes(symbol)) return 'w-[84px]';
   return 'w-20';
 };
 
@@ -71,7 +111,7 @@ const TickerItem = React.memo(
     }, [registerRefs, symbol, unregisterRefs]);
 
     return (
-      <span className="mr-0 inline-flex h-9 min-w-52 max-w-52 items-center justify-center gap-0 font-mono text-xs border-r border-border-subtle">
+      <span className="mr-0 inline-flex h-9 min-w-52 max-w-52 items-center justify-between px-6 gap-0 font-mono text-xs border-r border-border-subtle">
         <button
           className="text-accent hover:text-text-primary w-fit text-left"
           onClick={() => onOpenTab(symbol)}
@@ -86,7 +126,7 @@ const TickerItem = React.memo(
         </span>
         <span
           ref={changeRef}
-          className={`font-mono text-xs text-text-secondary block text-right w-16`}
+          className={`font-mono text-xs text-text-secondary block text-right w-2`}
         >
           {''}
         </span>
@@ -96,7 +136,8 @@ const TickerItem = React.memo(
   () => true,
 );
 
-export default function TickerTape({ onOpenTab }: TickerTapeProps): JSX.Element {
+export default function TickerTape({ onOpenTab, market = 'stocks' }: TickerTapeProps): JSX.Element {
+  const symbols = market === 'crypto' ? CRYPTO_SYMBOLS : TICKER_SYMBOLS;
   // Imperative refs map lets us patch DOM text/class directly per symbol tick.
   // This avoids React state updates for each WebSocket event across marquee items.
   const itemRefsMap = useRef<Map<string, TickerItemRefs[]>>(new Map());
@@ -124,8 +165,16 @@ export default function TickerTape({ onOpenTab }: TickerTapeProps): JSX.Element 
         refs.price.textContent = formatCurrency(currentTrade.p);
         entry.prevPrice = currentTrade.p;
       }
+
+      const initialChange = getInitialChange(symbol, market);
+      if (initialChange !== null) {
+        const colorClass = initialChange >= 0 ? 'text-positive' : 'text-negative';
+        refs.change.className = `font-mono text-xs ${colorClass} block text-right w-fit`;
+        refs.change.textContent = formatPercent(initialChange);
+        entry.lastColorClass = colorClass;
+      }
     },
-    [],
+    [market],
   );
 
   const unregisterRefs = useCallback(
@@ -147,8 +196,17 @@ export default function TickerTape({ onOpenTab }: TickerTapeProps): JSX.Element 
   );
 
   useEffect(() => {
+    if (market !== 'crypto') return;
+    CRYPTO_COINS.forEach((coin) => {
+      if (!latestTradesCache[coin.symbol]) {
+        latestTradesCache[coin.symbol] = { p: coin.price };
+      }
+    });
+  }, [market]);
+
+  useEffect(() => {
     const applyTrades = (latestTrades: Record<string, { p: number }>): void => {
-      TICKER_SYMBOLS.forEach((symbol) => {
+      symbols.forEach((symbol) => {
         const trade = latestTrades[symbol];
         if (!trade) return;
 
@@ -186,7 +244,7 @@ export default function TickerTape({ onOpenTab }: TickerTapeProps): JSX.Element 
     });
 
     return unsub;
-  }, []);
+  }, [symbols]);
 
   useEffect(() => {
     const checkOverflow = (): void => {
@@ -210,13 +268,13 @@ export default function TickerTape({ onOpenTab }: TickerTapeProps): JSX.Element 
       window.clearTimeout(timeoutId);
       observer.disconnect();
     };
-  }, [TICKER_SYMBOLS.length]);
+  }, [symbols.length]);
 
   return (
     <section className="sticky top-0 z-20 h-9 overflow-hidden border-b border-border-subtle bg-background-base">
       <div ref={containerRef} className="h-full overflow-hidden">
-        <Marquee speed={36} gradient={false} pauseOnHover autoFill>
-          {TICKER_SYMBOLS.map((symbol) => (
+        <Marquee speed={30} gradient={false} pauseOnHover autoFill>
+          {symbols.map((symbol) => (
             <TickerItem
               key={symbol}
               symbol={symbol}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getMockQuote } from '@/mock/mockData';
+import { CRYPTO_COINS, getCryptoMockQuote } from '@/mock/cryptoData';
 import Skeleton from '@/components/ui/Skeleton';
 import Sparkline from '@/components/ui/Sparkline';
 import { useToastStore } from '@/components/ui/Toast';
@@ -11,6 +12,7 @@ import { formatCurrency } from '@/lib/utils';
 interface WatchlistProps {
   activeSymbol: string | null;
   onOpenTab: (symbol: string) => void;
+  market?: 'stocks' | 'crypto';
 }
 
 interface SparklineItemProps {
@@ -31,12 +33,24 @@ function SparklineItem({ symbol }: SparklineItemProps): JSX.Element {
   return <Sparkline prices={closes} positive={positive} width={80} height={28} />;
 }
 
-export default function Watchlist({ activeSymbol, onOpenTab }: WatchlistProps): JSX.Element {
+export default function Watchlist({
+  activeSymbol,
+  onOpenTab,
+  market = 'stocks',
+}: WatchlistProps): JSX.Element {
   const { symbols, removeSymbol } = useWatchlistStore();
   const latestTrades = useMarketDataStore((state) => state.latestTrades);
   const pushToast = useToastStore((state) => state.pushToast);
 
   const [query, setQuery] = useState('');
+  const cryptoPriceBySymbol = useMemo(
+    () =>
+      CRYPTO_COINS.reduce<Record<string, number>>((acc, coin) => {
+        acc[coin.symbol] = coin.price;
+        return acc;
+      }, {}),
+    [],
+  );
 
   const filteredSymbols = useMemo(() => {
     const normalized = query.toLowerCase().trim();
@@ -69,10 +83,10 @@ export default function Watchlist({ activeSymbol, onOpenTab }: WatchlistProps): 
 
   useEffect(() => {
     symbols.forEach((symbol) => {
-      const quote = getMockQuote(symbol);
+      const quote = market === 'crypto' ? getCryptoMockQuote(symbol) : getMockQuote(symbol);
       quoteRangeRef.current[symbol] = { h: quote.h, l: quote.l };
     });
-  }, [symbols]);
+  }, [symbols, market]);
 
   return (
     <section className="flex h-full flex-col">
@@ -125,6 +139,10 @@ export default function Watchlist({ activeSymbol, onOpenTab }: WatchlistProps): 
                       <span className="font-mono text-sm text-text-primary">
                         {formatCurrency(current)}
                       </span>
+                    ) : market === 'crypto' && cryptoPriceBySymbol[symbol] !== undefined ? (
+                      <span className="font-mono text-sm text-text-primary">
+                        {formatCurrency(cryptoPriceBySymbol[symbol])}
+                      </span>
                     ) : (
                       <Skeleton className="h-4 w-14" />
                     )}
@@ -162,6 +180,10 @@ export default function Watchlist({ activeSymbol, onOpenTab }: WatchlistProps): 
                       {trade && current !== undefined ? (
                         <span className="font-mono text-sm text-text-primary">
                           {formatCurrency(current)}
+                        </span>
+                      ) : market === 'crypto' && cryptoPriceBySymbol[symbol] !== undefined ? (
+                        <span className="font-mono text-sm text-text-primary">
+                          {formatCurrency(cryptoPriceBySymbol[symbol])}
                         </span>
                       ) : (
                         <Skeleton className="h-4 w-14" />

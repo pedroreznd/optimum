@@ -1,14 +1,38 @@
 import { useState } from 'react';
 import Skeleton from '@/components/ui/Skeleton';
 import { useStockSearch } from '@/hooks/useStockSearch';
+import { CRYPTO_COINS } from '@/mock/cryptoData';
 
 interface SearchBarProps {
   onSelect: (symbol: string, companyName: string) => void;
+  market?: 'stocks' | 'crypto';
 }
 
-export default function SearchBar({ onSelect }: SearchBarProps): JSX.Element {
-  const { query, setQuery, loading, error, data, isEmpty } = useStockSearch();
+export default function SearchBar({ onSelect, market = 'stocks' }: SearchBarProps): JSX.Element {
+  const stockSearch = useStockSearch();
+  const [cryptoQuery, setCryptoQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const query = market === 'crypto' ? cryptoQuery : stockSearch.query;
+  const setQuery = market === 'crypto' ? setCryptoQuery : stockSearch.setQuery;
+  const loading = market === 'crypto' ? false : stockSearch.loading;
+  const error = market === 'crypto' ? null : stockSearch.error;
+  const data =
+    market === 'crypto'
+      ? CRYPTO_COINS.filter((coin) => {
+          const normalized = query.toLowerCase().trim();
+          if (!normalized) return false;
+          return (
+            coin.symbol.toLowerCase().includes(normalized) ||
+            coin.name.toLowerCase().includes(normalized)
+          );
+        }).map((coin) => ({
+          symbol: coin.symbol,
+          displaySymbol: coin.symbol,
+          description: coin.name,
+          type: 'Cryptocurrency',
+        }))
+      : stockSearch.data;
+  const isEmpty = market === 'crypto' ? query.trim().length > 0 && data.length === 0 : stockSearch.isEmpty;
 
   return (
     <section className="relative border-b border-border-subtle p-3">

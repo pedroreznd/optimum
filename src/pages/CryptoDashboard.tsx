@@ -1,30 +1,28 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Chart from '@/components/features/Chart';
+import CryptoBrowser from '@/components/features/CryptoBrowser';
+import IndicatorPanel from '@/components/features/IndicatorPanel';
+import MarketDataProvider from '@/components/MarketDataProvider';
 import MetricsCard from '@/components/features/MetricsCard';
 import SearchBar from '@/components/features/SearchBar';
-import StockBrowser from '@/components/features/StockBrowser';
-import StockTabs from '@/components/features/StockTabs';
 import TickerTape from '@/components/features/TickerTape';
 import Watchlist from '@/components/features/Watchlist';
-import MarketDataProvider from '@/components/MarketDataProvider';
-import IndicatorPanel from '@/components/features/IndicatorPanel';
-import Drawer from '@/components/ui/Drawer';
 import DashboardHeader from '@/components/ui/DashboardHeader';
+import Drawer from '@/components/ui/Drawer';
 import Skeleton from '@/components/ui/Skeleton';
 import Toast, { useToastStore } from '@/components/ui/Toast';
-import { POPULAR_SYMBOLS } from '@/mock/mockData';
-import { useStockQuote } from '@/hooks/useStockQuote';
+import { CRYPTO_COINS, getCryptoMockQuote } from '@/mock/cryptoData';
 import type { MainChartSyncBridge } from '@/lib/chartSync';
 import { formatCompact, formatCurrency, formatPercent } from '@/lib/utils';
-import { useTabStore } from '@/store/tabStore';
+import { useCryptoTabStore } from '@/store/cryptoTabStore';
 import { useWatchlistStore } from '@/store/watchlistStore';
-import type { CandleDataPoint } from '@/types/finnhub';
-import { FiChevronsRight, FiChevronsLeft } from 'react-icons/fi';
+import type { CandleDataPoint, FinnhubQuote } from '@/types/finnhub';
+import { FiChevronsLeft, FiChevronsRight, FiX } from 'react-icons/fi';
 
-const findCompanyName = (symbol: string): string =>
-  POPULAR_SYMBOLS.find((stock) => stock.symbol === symbol)?.name ?? symbol;
+const findCoinName = (symbol: string): string =>
+  CRYPTO_COINS.find((coin) => coin.symbol === symbol)?.name ?? symbol;
 
-export default function Dashboard(): JSX.Element {
+export default function CryptoDashboard(): JSX.Element {
   const [mobileLeftOpen, setMobileLeftOpen] = useState(false);
   const [mobileRightOpen, setMobileRightOpen] = useState(false);
   const [tabletLeftOpen, setTabletLeftOpen] = useState(false);
@@ -33,9 +31,11 @@ export default function Dashboard(): JSX.Element {
   const [resolvedSymbol, setResolvedSymbol] = useState<string | null>(null);
   const [activeCandles, setActiveCandles] = useState<CandleDataPoint[]>([]);
   const [mainSyncBridge, setMainSyncBridge] = useState<MainChartSyncBridge | null>(null);
+  const [quote, setQuote] = useState<FinnhubQuote | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const addSymbol = useWatchlistStore((state) => state.addSymbol);
-  const { tabs, activeSymbol, openTab } = useTabStore();
+  const { tabs, activeSymbol, openTab, closeTab, setActive } = useCryptoTabStore();
   const pushToastFn = useToastStore((state) => state.pushToast);
   const pushToastRef = useRef(pushToastFn);
   useEffect(() => {
@@ -44,8 +44,6 @@ export default function Dashboard(): JSX.Element {
   const pushToast = useCallback((...args: Parameters<typeof pushToastFn>) => {
     pushToastRef.current(...args);
   }, []);
-
-  const { quote, loading } = useStockQuote(activeSymbol ?? '');
 
   useEffect(() => {
     const left = localStorage.getItem('leftSidebarOpen');
@@ -63,6 +61,38 @@ export default function Dashboard(): JSX.Element {
   }, [rightSidebarOpen]);
 
   useEffect(() => {
+    let active = true;
+
+    const loadQuote = async (): Promise<void> => {
+      if (!activeSymbol) {
+        if (!active) return;
+        setQuote(null);
+        setLoading(false);
+        return;
+      }
+
+      if (!active) return;
+      setLoading(true);
+      await new Promise<void>((resolve) => {
+        window.setTimeout(() => resolve(), 180);
+      });
+      if (!active) return;
+      setQuote(getCryptoMockQuote(activeSymbol));
+      setLoading(false);
+    };
+
+    void loadQuote();
+    const intervalId = window.setInterval(() => {
+      void loadQuote();
+    }, 5000);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
+  }, [activeSymbol]);
+
+  useEffect(() => {
     if (!activeSymbol) {
       setResolvedSymbol(null);
       return;
@@ -77,12 +107,12 @@ export default function Dashboard(): JSX.Element {
     document.title = activeSymbol ? `${activeSymbol} - Optimum` : 'Optimum';
   }, [activeSymbol]);
 
-  const openStockTab = useCallback(
+  const openCryptoTab = useCallback(
     (symbol: string, companyName?: string): void => {
       const opened = openTab({
         symbol,
         label: symbol,
-        companyName: companyName ?? findCompanyName(symbol),
+        companyName: companyName ?? findCoinName(symbol),
       });
 
       if (!opened) {
@@ -141,7 +171,7 @@ export default function Dashboard(): JSX.Element {
               tabletLeftOpen ? 'md:w-64' : 'md:w-0'
             } ${leftSidebarOpen ? 'lg:w-64' : 'lg:w-0'}`}
           >
-            <StockBrowser />
+            <CryptoBrowser onOpenTab={() => undefined} />
           </aside>
           <button
             className={`absolute right-0 top-1/2 z-20 hidden ${leftSidebarOpen ? 'w-4' : 'w-8'} h-12 hover:bg-background-overlay -translate-y-1/2 translate-x-1/2 border border-border-subtle bg-background-surface text-xs text-text-secondary hover:text-text-primary lg:block`}
@@ -157,8 +187,39 @@ export default function Dashboard(): JSX.Element {
         </div>
 
         <section className="flex min-w-0 flex-1 flex-col overflow-hidden border-r border-border-subtle md:border-r-0 lg:border-r-0">
-          <TickerTape market="stocks" onOpenTab={openStockTab} />
-          <StockTabs />
+          <TickerTape market="crypto" onOpenTab={openCryptoTab} />
+
+          <section
+            className={`${tabs.length > 0 && 'border-b'} border-border-subtle bg-background-base`}
+          >
+            <div className="hide-scrollbar flex overflow-x-auto">
+              {tabs.map((tab) => {
+                const active = tab.symbol === activeSymbol;
+
+                return (
+                  <div
+                    key={tab.symbol}
+                    onClick={() => setActive(tab.symbol)}
+                    className={`group flex h-7 min-w-[140px] items-center cursor-pointer border-r border-border-subtle pl-4 pr-2 text-xs font-mono ${
+                      active
+                        ? 'border-t-2 border-t-accent bg-background-surface text-text-primary'
+                        : 'text-text-secondary'
+                    }`}
+                  >
+                    <div className="flex-1 text-left">{tab.symbol}</div>
+                    <button
+                      className="ml-2 text-xs opacity-0 transition-opacity hover:text-text-primary group-hover:opacity-100"
+                      onClick={() => closeTab(tab.symbol)}
+                      aria-label={`Close ${tab.symbol}`}
+                      title={`Close ${tab.symbol}`}
+                    >
+                      <FiX className="h-4 w-4" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
 
           <div
             className="min-h-0 flex-1 overflow-y-auto lg:flex lg:flex-col lg:overflow-hidden"
@@ -203,7 +264,7 @@ export default function Dashboard(): JSX.Element {
                   <section className="flex min-h-0 flex-1 flex-col">
                     <Chart
                       symbol={activeSymbol}
-                      market="stocks"
+                      market="crypto"
                       onCandlesChange={setActiveCandles}
                       onSyncBridgeChange={setMainSyncBridge}
                     />
@@ -229,13 +290,13 @@ export default function Dashboard(): JSX.Element {
             style={{ scrollbarWidth: 'none' }}
           >
             <SearchBar
-              market="stocks"
+              market="crypto"
               onSelect={(symbol, companyName) => {
                 addSymbol(symbol);
-                openStockTab(symbol, companyName);
+                openCryptoTab(symbol, companyName);
               }}
             />
-            <Watchlist market="stocks" activeSymbol={activeSymbol} onOpenTab={openStockTab} />
+            <Watchlist market="crypto" activeSymbol={activeSymbol} onOpenTab={openCryptoTab} />
           </aside>
           <button
             className={`absolute left-0 top-1/2 z-20 hidden ${rightSidebarOpen ? 'w-4' : 'w-8'} h-12 hover:bg-background-overlay -translate-x-1/2 -translate-y-1/2 border border-border-subtle bg-background-surface text-xs text-text-secondary hover:text-text-primary lg:block`}
@@ -252,24 +313,28 @@ export default function Dashboard(): JSX.Element {
       </div>
 
       <Drawer open={mobileLeftOpen} side="left" onClose={() => setMobileLeftOpen(false)}>
-        <StockBrowser onOpenTab={() => setMobileLeftOpen(false)} />
+        <CryptoBrowser
+          onOpenTab={() => {
+            setMobileLeftOpen(false);
+          }}
+        />
       </Drawer>
 
       <Drawer open={mobileRightOpen} side="right" onClose={() => setMobileRightOpen(false)}>
         <section className="h-full overflow-y-hidden border-l border-border-subtle">
           <SearchBar
-            market="stocks"
+            market="crypto"
             onSelect={(symbol, companyName) => {
               addSymbol(symbol);
-              openStockTab(symbol, companyName);
+              openCryptoTab(symbol, companyName);
               setMobileRightOpen(false);
             }}
           />
           <Watchlist
-            market="stocks"
+            market="crypto"
             activeSymbol={activeSymbol}
             onOpenTab={(symbol) => {
-              openStockTab(symbol);
+              openCryptoTab(symbol);
               setMobileRightOpen(false);
             }}
           />
