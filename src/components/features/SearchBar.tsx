@@ -58,12 +58,15 @@ export default function SearchBar({ onSelect, market = 'stocks' }: SearchBarProp
           }}
           onFocus={() => setIsOpen(true)}
           className="w-full border border-border-subtle bg-background-surface py-1 pl-7 pr-3 rounded-sm text-xs text-text-primary placeholder:text-text-muted outline-none transition-colors duration-200 focus:border-accent"
-          placeholder={market === 'crypto' ? 'Search symbol' : 'Search symbol or company'}
+          placeholder={market === 'crypto' ? 'Search crypto' : 'Search stocks'}
         />
       </div>
 
       {isOpen && query.trim() && (
-        <div className="absolute left-3 right-3 top-[76px] z-20 max-h-64 overflow-y-auto border border-border-subtle bg-background-surface">
+        <div
+          className="absolute left-3 right-3 top-[58px] z-20 max-h-64 overflow-y-auto border border-border-subtle bg-background-surface"
+          style={{ scrollbarWidth: 'none' }}
+        >
           {loading && (
             <div className="space-y-1 p-2">
               <Skeleton className="h-7 w-full" />
