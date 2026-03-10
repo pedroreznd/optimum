@@ -8,6 +8,12 @@
 
 <br />
 
+<p align="center">
+  <a href="https://optimumdev.xyz">Live Demo</a>
+</p>
+
+<br />
+
 <img width="1920" height="1080" alt="Optimum Dashboard" src="https://github.com/user-attachments/assets/ed3ca717-c838-4e4f-8b37-8cda30bb73b0" />
 
 <br />
