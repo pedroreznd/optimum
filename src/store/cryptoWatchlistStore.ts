@@ -11,10 +11,10 @@ interface WatchlistState {
   clearWatchlist: () => void;
 }
 
-export const useWatchlistStore = create<WatchlistState>()(
+export const useCryptoWatchlistStore = create<WatchlistState>()(
   persist(
     (set) => ({
-      symbols: ['AAPL', 'MSFT', 'NVDA'],
+      symbols: ['BTC', 'ETH', 'SOL'],
       addSymbol: (symbol) =>
         set((state) => {
           if (state.symbols.includes(symbol)) return state;
@@ -27,7 +27,7 @@ export const useWatchlistStore = create<WatchlistState>()(
       clearWatchlist: () => set({ symbols: [] }),
     }),
     {
-      name: 'optimum-stocks-watchlist',
+      name: 'optimum-crypto-watchlist',
       storage: createJSONStorage(() => localStorage),
     },
   ),

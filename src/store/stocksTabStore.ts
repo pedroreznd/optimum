@@ -21,7 +21,7 @@ interface TabState {
 
 const MAX_TABS = 8;
 
-export const useTabStore = create<TabState>()(
+export const useStocksTabStore = create<TabState>()(
   persist(
     (set, get) => ({
       tabs: [],

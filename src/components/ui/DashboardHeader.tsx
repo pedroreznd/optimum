@@ -1,5 +1,6 @@
 import AnimatedNavLink from '@/components/ui/AnimatedNavLink';
-import Logo from '@/assets/images/logo-full.png';
+import LogoFull from '@/assets/images/logo-full.png';
+import Logo from '@/assets/icons/logo.svg';
 import { FiMenu } from 'react-icons/fi';
 
 interface DashboardHeaderProps {
@@ -30,11 +31,12 @@ export default function DashboardHeader({
         >
           <FiMenu className="w-5 h-5" />
         </button>
-        <img src={Logo} className="h-8 max-h-8 w-fit" />
+        <img src={LogoFull} className="h-8 max-h-8 w-fit hidden lg:flex" />
       </div>
 
       <div className="flex items-center justify-center gap-3">
         <AnimatedNavLink to="/">Stocks</AnimatedNavLink>
+        <img src={Logo} className="h-7 max-h-7 w-fit flex lg:hidden" />
         <AnimatedNavLink to="/crypto">Crypto</AnimatedNavLink>
       </div>
 

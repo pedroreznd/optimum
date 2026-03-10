@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { getMockQuote, POPULAR_SYMBOLS } from '@/mock/mockData';
 import { useToastStore } from '@/components/ui/Toast';
-import { useTabStore } from '@/store/tabStore';
+import { useStocksTabStore } from '@/store/stocksTabStore';
 import { useWatchlistStore } from '@/store/watchlistStore';
 import { formatCurrency } from '@/lib/utils';
 
@@ -16,7 +16,7 @@ export default function StockBrowser({
 }: StockBrowserProps): JSX.Element {
   const [query, setQuery] = useState('');
   const { symbols, addSymbol, removeSymbol } = useWatchlistStore();
-  const { openTab } = useTabStore();
+  const { openTab } = useStocksTabStore();
   const pushToast = useToastStore((state) => state.pushToast);
 
   const filtered = useMemo(() => {

@@ -6,6 +6,7 @@ import Sparkline from '@/components/ui/Sparkline';
 import { useToastStore } from '@/components/ui/Toast';
 import { useMarketDataStore } from '@/store/marketDataStore';
 import { useWatchlistStore } from '@/store/watchlistStore';
+import { useCryptoWatchlistStore } from '@/store/cryptoWatchlistStore';
 import { useSparkline } from '@/hooks/useSparkline';
 import { formatCurrency } from '@/lib/utils';
 
@@ -38,7 +39,9 @@ export default function Watchlist({
   onOpenTab,
   market = 'stocks',
 }: WatchlistProps): JSX.Element {
-  const { symbols, removeSymbol } = useWatchlistStore();
+  const stocksStore = useWatchlistStore();
+  const cryptoStore = useCryptoWatchlistStore();
+  const { symbols, removeSymbol } = market === 'crypto' ? cryptoStore : stocksStore;
   const latestTrades = useMarketDataStore((state) => state.latestTrades);
   const pushToast = useToastStore((state) => state.pushToast);
 

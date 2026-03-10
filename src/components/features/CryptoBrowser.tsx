@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { CRYPTO_COINS } from '@/mock/cryptoData';
 import { useToastStore } from '@/components/ui/Toast';
 import { useCryptoTabStore } from '@/store/cryptoTabStore';
-import { useWatchlistStore } from '@/store/watchlistStore';
+import { useCryptoWatchlistStore } from '@/store/cryptoWatchlistStore';
 import { formatCurrency } from '@/lib/utils';
 
 interface CryptoBrowserProps {
@@ -15,7 +15,7 @@ export default function CryptoBrowser({
   onOpenTab,
 }: CryptoBrowserProps): JSX.Element {
   const [query, setQuery] = useState('');
-  const { symbols, addSymbol, removeSymbol } = useWatchlistStore();
+  const { symbols, addSymbol, removeSymbol } = useCryptoWatchlistStore();
   const { openTab } = useCryptoTabStore();
   const pushToast = useToastStore((state) => state.pushToast);
 

@@ -15,7 +15,7 @@ import { CRYPTO_COINS, getCryptoMockQuote } from '@/mock/cryptoData';
 import type { MainChartSyncBridge } from '@/lib/chartSync';
 import { formatCompact, formatCurrency, formatPercent } from '@/lib/utils';
 import { useCryptoTabStore } from '@/store/cryptoTabStore';
-import { useWatchlistStore } from '@/store/watchlistStore';
+import { useCryptoWatchlistStore } from '@/store/cryptoWatchlistStore';
 import type { CandleDataPoint, FinnhubQuote } from '@/types/finnhub';
 import { FiChevronsLeft, FiChevronsRight, FiX } from 'react-icons/fi';
 
@@ -28,14 +28,14 @@ export default function CryptoDashboard(): JSX.Element {
   const [tabletLeftOpen, setTabletLeftOpen] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
-  const [resolvedSymbol, setResolvedSymbol] = useState<string | null>(null);
+  const { tabs, activeSymbol, openTab, closeTab, setActive } = useCryptoTabStore();
+  const [resolvedSymbol, setResolvedSymbol] = useState<string | null>(activeSymbol ?? null);
   const [activeCandles, setActiveCandles] = useState<CandleDataPoint[]>([]);
   const [mainSyncBridge, setMainSyncBridge] = useState<MainChartSyncBridge | null>(null);
   const [quote, setQuote] = useState<FinnhubQuote | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const addSymbol = useWatchlistStore((state) => state.addSymbol);
-  const { tabs, activeSymbol, openTab, closeTab, setActive } = useCryptoTabStore();
+  const addSymbol = useCryptoWatchlistStore((state) => state.addSymbol);
   const pushToastFn = useToastStore((state) => state.pushToast);
   const pushToastRef = useRef(pushToastFn);
   useEffect(() => {
@@ -104,7 +104,7 @@ export default function CryptoDashboard(): JSX.Element {
   }, [activeSymbol, loading]);
 
   useEffect(() => {
-    document.title = activeSymbol ? `${activeSymbol} - Optimum` : 'Optimum';
+    document.title = activeSymbol ? `$${activeSymbol} - Optimum` : 'Optimum';
   }, [activeSymbol]);
 
   const openCryptoTab = useCallback(

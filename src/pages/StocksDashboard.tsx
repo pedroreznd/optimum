@@ -16,7 +16,7 @@ import { POPULAR_SYMBOLS } from '@/mock/mockData';
 import { useStockQuote } from '@/hooks/useStockQuote';
 import type { MainChartSyncBridge } from '@/lib/chartSync';
 import { formatCompact, formatCurrency, formatPercent } from '@/lib/utils';
-import { useTabStore } from '@/store/tabStore';
+import { useStocksTabStore } from '@/store/stocksTabStore';
 import { useWatchlistStore } from '@/store/watchlistStore';
 import type { CandleDataPoint } from '@/types/finnhub';
 import { FiChevronsRight, FiChevronsLeft } from 'react-icons/fi';
@@ -24,18 +24,18 @@ import { FiChevronsRight, FiChevronsLeft } from 'react-icons/fi';
 const findCompanyName = (symbol: string): string =>
   POPULAR_SYMBOLS.find((stock) => stock.symbol === symbol)?.name ?? symbol;
 
-export default function Dashboard(): JSX.Element {
+export default function StocksDashboard(): JSX.Element {
   const [mobileLeftOpen, setMobileLeftOpen] = useState(false);
   const [mobileRightOpen, setMobileRightOpen] = useState(false);
   const [tabletLeftOpen, setTabletLeftOpen] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
-  const [resolvedSymbol, setResolvedSymbol] = useState<string | null>(null);
+  const { tabs, activeSymbol, openTab } = useStocksTabStore();
+  const [resolvedSymbol, setResolvedSymbol] = useState<string | null>(activeSymbol ?? null);
   const [activeCandles, setActiveCandles] = useState<CandleDataPoint[]>([]);
   const [mainSyncBridge, setMainSyncBridge] = useState<MainChartSyncBridge | null>(null);
 
   const addSymbol = useWatchlistStore((state) => state.addSymbol);
-  const { tabs, activeSymbol, openTab } = useTabStore();
   const pushToastFn = useToastStore((state) => state.pushToast);
   const pushToastRef = useRef(pushToastFn);
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function Dashboard(): JSX.Element {
   }, [activeSymbol, loading]);
 
   useEffect(() => {
-    document.title = activeSymbol ? `${activeSymbol} - Optimum` : 'Optimum';
+    document.title = activeSymbol ? `$${activeSymbol} - Optimum` : 'Optimum';
   }, [activeSymbol]);
 
   const openStockTab = useCallback(

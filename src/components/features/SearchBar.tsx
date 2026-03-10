@@ -58,7 +58,7 @@ export default function SearchBar({ onSelect, market = 'stocks' }: SearchBarProp
           }}
           onFocus={() => setIsOpen(true)}
           className="w-full border border-border-subtle bg-background-surface py-1 pl-7 pr-3 rounded-sm text-xs text-text-primary placeholder:text-text-muted outline-none transition-colors duration-200 focus:border-accent"
-          placeholder="Search symbol or company"
+          placeholder={market === 'crypto' ? 'Search symbol' : 'Search symbol or company'}
         />
       </div>
 
