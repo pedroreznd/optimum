@@ -9,33 +9,33 @@ import Watchlist from '@/components/features/Watchlist';
 import MarketDataProvider from '@/components/MarketDataProvider';
 import IndicatorPanel from '@/components/features/IndicatorPanel';
 import Drawer from '@/components/ui/Drawer';
+import DashboardHeader from '@/components/ui/DashboardHeader';
 import Skeleton from '@/components/ui/Skeleton';
 import Toast, { useToastStore } from '@/components/ui/Toast';
 import { POPULAR_SYMBOLS } from '@/mock/mockData';
 import { useStockQuote } from '@/hooks/useStockQuote';
 import type { MainChartSyncBridge } from '@/lib/chartSync';
 import { formatCompact, formatCurrency, formatPercent } from '@/lib/utils';
-import { useTabStore } from '@/store/tabStore';
+import { useStocksTabStore } from '@/store/stocksTabStore';
 import { useWatchlistStore } from '@/store/watchlistStore';
 import type { CandleDataPoint } from '@/types/finnhub';
-import Logo from '@/assets/images/logo.svg';
-import { FiChevronsRight, FiChevronsLeft, FiMenu } from 'react-icons/fi';
+import { FiChevronsRight, FiChevronsLeft } from 'react-icons/fi';
 
 const findCompanyName = (symbol: string): string =>
   POPULAR_SYMBOLS.find((stock) => stock.symbol === symbol)?.name ?? symbol;
 
-export default function Dashboard(): JSX.Element {
+export default function StocksDashboard(): JSX.Element {
   const [mobileLeftOpen, setMobileLeftOpen] = useState(false);
   const [mobileRightOpen, setMobileRightOpen] = useState(false);
   const [tabletLeftOpen, setTabletLeftOpen] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
-  const [resolvedSymbol, setResolvedSymbol] = useState<string | null>(null);
+  const { tabs, activeSymbol, openTab } = useStocksTabStore();
+  const [resolvedSymbol, setResolvedSymbol] = useState<string | null>(activeSymbol ?? null);
   const [activeCandles, setActiveCandles] = useState<CandleDataPoint[]>([]);
   const [mainSyncBridge, setMainSyncBridge] = useState<MainChartSyncBridge | null>(null);
 
   const addSymbol = useWatchlistStore((state) => state.addSymbol);
-  const { tabs, activeSymbol, openTab } = useTabStore();
   const pushToastFn = useToastStore((state) => state.pushToast);
   const pushToastRef = useRef(pushToastFn);
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function Dashboard(): JSX.Element {
   }, [activeSymbol, loading]);
 
   useEffect(() => {
-    document.title = activeSymbol ? `${activeSymbol} - Optimum` : 'Optimum';
+    document.title = activeSymbol ? `$${activeSymbol} - Optimum` : 'Optimum';
   }, [activeSymbol]);
 
   const openStockTab = useCallback(
@@ -128,35 +128,11 @@ export default function Dashboard(): JSX.Element {
   return (
     <main className="h-screen overflow-hidden bg-background-base text-text-primary">
       <MarketDataProvider />
-      <header className="flex h-10 max-h-10 items-center justify-between border-b border-border-subtle px-3 text-3xl">
-        <div className="flex items-center gap-2">
-          <button
-            className="text-text-secondary hover:text-text-primary md:hidden"
-            onClick={() => setMobileLeftOpen(true)}
-            aria-label="Open markets"
-          >
-            <FiMenu className="w-5 h-5" />
-          </button>
-          <button
-            className="hidden text-text-secondary hover:text-text-primary md:inline-flex lg:hidden"
-            onClick={() => setTabletLeftOpen((value) => !value)}
-            aria-label="Toggle markets"
-          >
-            ≡
-          </button>
-          <div className="inline-flex gap-2 items-end">
-            <img src={Logo} className="h-8 max-h-8" />
-          </div>
-        </div>
-
-        <button
-          className="text-text-secondary hover:text-text-primary md:hidden"
-          onClick={() => setMobileRightOpen(true)}
-          aria-label="Open watchlist"
-        >
-          <FiMenu className="w-5 h-5" />
-        </button>
-      </header>
+      <DashboardHeader
+        onOpenMarkets={() => setMobileLeftOpen(true)}
+        onToggleMarkets={() => setTabletLeftOpen((value) => !value)}
+        onOpenWatchlist={() => setMobileRightOpen(true)}
+      />
 
       <div className="flex h-[calc(100vh-2.5rem)] overflow-hidden">
         <div className="relative hidden h-full md:block">
@@ -181,7 +157,7 @@ export default function Dashboard(): JSX.Element {
         </div>
 
         <section className="flex min-w-0 flex-1 flex-col overflow-hidden border-r border-border-subtle md:border-r-0 lg:border-r-0">
-          <TickerTape onOpenTab={openStockTab} />
+          <TickerTape market="stocks" onOpenTab={openStockTab} />
           <StockTabs />
 
           <div
@@ -227,6 +203,7 @@ export default function Dashboard(): JSX.Element {
                   <section className="flex min-h-0 flex-1 flex-col">
                     <Chart
                       symbol={activeSymbol}
+                      market="stocks"
                       onCandlesChange={setActiveCandles}
                       onSyncBridgeChange={setMainSyncBridge}
                     />
@@ -252,12 +229,13 @@ export default function Dashboard(): JSX.Element {
             style={{ scrollbarWidth: 'none' }}
           >
             <SearchBar
+              market="stocks"
               onSelect={(symbol, companyName) => {
                 addSymbol(symbol);
                 openStockTab(symbol, companyName);
               }}
             />
-            <Watchlist activeSymbol={activeSymbol} onOpenTab={openStockTab} />
+            <Watchlist market="stocks" activeSymbol={activeSymbol} onOpenTab={openStockTab} />
           </aside>
           <button
             className={`absolute left-0 top-1/2 z-20 hidden ${rightSidebarOpen ? 'w-4' : 'w-8'} h-12 hover:bg-background-overlay -translate-x-1/2 -translate-y-1/2 border border-border-subtle bg-background-surface text-xs text-text-secondary hover:text-text-primary lg:block`}
@@ -280,6 +258,7 @@ export default function Dashboard(): JSX.Element {
       <Drawer open={mobileRightOpen} side="right" onClose={() => setMobileRightOpen(false)}>
         <section className="h-full overflow-y-hidden border-l border-border-subtle">
           <SearchBar
+            market="stocks"
             onSelect={(symbol, companyName) => {
               addSymbol(symbol);
               openStockTab(symbol, companyName);
@@ -287,6 +266,7 @@ export default function Dashboard(): JSX.Element {
             }}
           />
           <Watchlist
+            market="stocks"
             activeSymbol={activeSymbol}
             onOpenTab={(symbol) => {
               openStockTab(symbol);

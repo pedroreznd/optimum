@@ -1,8 +1,8 @@
-import { useTabStore } from '@/store/tabStore';
+import { useStocksTabStore } from '@/store/stocksTabStore';
 import { FiX } from 'react-icons/fi';
 
 export default function StockTabs(): JSX.Element {
-  const { tabs, activeSymbol, setActive, closeTab } = useTabStore();
+  const { tabs, activeSymbol, setActive, closeTab } = useStocksTabStore();
 
   return (
     <section className={`${tabs.length > 0 && 'border-b'} border-border-subtle bg-background-base`}>

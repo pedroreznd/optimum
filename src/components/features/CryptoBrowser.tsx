@@ -1,43 +1,34 @@
 import { useMemo, useState } from 'react';
-import { getMockQuote, POPULAR_SYMBOLS } from '@/mock/mockData';
+import { CRYPTO_COINS } from '@/mock/cryptoData';
 import { useToastStore } from '@/components/ui/Toast';
-import { useStocksTabStore } from '@/store/stocksTabStore';
-import { useWatchlistStore } from '@/store/watchlistStore';
+import { useCryptoTabStore } from '@/store/cryptoTabStore';
+import { useCryptoWatchlistStore } from '@/store/cryptoWatchlistStore';
 import { formatCurrency } from '@/lib/utils';
 
-interface StockBrowserProps {
+interface CryptoBrowserProps {
   className?: string;
-  onOpenTab?: () => void;
+  onOpenTab: (symbol: string) => void;
 }
 
-export default function StockBrowser({
+export default function CryptoBrowser({
   className = '',
   onOpenTab,
-}: StockBrowserProps): JSX.Element {
+}: CryptoBrowserProps): JSX.Element {
   const [query, setQuery] = useState('');
-  const { symbols, addSymbol, removeSymbol } = useWatchlistStore();
-  const { openTab } = useStocksTabStore();
+  const { symbols, addSymbol, removeSymbol } = useCryptoWatchlistStore();
+  const { openTab } = useCryptoTabStore();
   const pushToast = useToastStore((state) => state.pushToast);
 
   const filtered = useMemo(() => {
     const normalized = query.toLowerCase().trim();
-    if (!normalized) return POPULAR_SYMBOLS;
+    if (!normalized) return CRYPTO_COINS;
 
-    return POPULAR_SYMBOLS.filter(
-      (stock) =>
-        stock.symbol.toLowerCase().includes(normalized) ||
-        stock.name.toLowerCase().includes(normalized),
+    return CRYPTO_COINS.filter(
+      (coin) =>
+        coin.symbol.toLowerCase().includes(normalized) ||
+        coin.name.toLowerCase().includes(normalized),
     );
   }, [query]);
-
-  const basePrices = useMemo(
-    () =>
-      POPULAR_SYMBOLS.reduce<Record<string, number>>((acc, stock) => {
-        acc[stock.symbol] = getMockQuote(stock.symbol).c;
-        return acc;
-      }, {}),
-    [],
-  );
 
   return (
     <section className={`h-full border-r border-border-subtle overflow-y-hidden ${className}`}>
@@ -45,7 +36,7 @@ export default function StockBrowser({
         <div className="mb-2 flex items-center justify-between">
           <p className="text-xs uppercase tracking-widest text-text-secondary">Markets</p>
           <span className="border border-border-subtle px-1.5 py-0.5 text-[10px] text-text-secondary">
-            {POPULAR_SYMBOLS.length}
+            {CRYPTO_COINS.length}
           </span>
         </div>
         <input
@@ -58,38 +49,37 @@ export default function StockBrowser({
 
       <div className="h-[calc(100%-76px)] overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <ul className="min-w-64">
-          {filtered.map((stock) => {
-            const inWatchlist = symbols.includes(stock.symbol);
-            const price = basePrices[stock.symbol];
+          {filtered.map((coin) => {
+            const inWatchlist = symbols.includes(coin.symbol);
 
             return (
               <li
-                key={stock.symbol}
+                key={coin.symbol}
                 className="relative flex items-center border-b border-border-subtle hover:bg-background-overlay"
               >
                 <button
                   className="grid flex-1 grid-cols-[1fr_auto] items-center gap-2 px-3 py-2 text-left"
                   onClick={() => {
                     const opened = openTab({
-                      symbol: stock.symbol,
-                      label: stock.symbol,
-                      companyName: stock.name,
+                      symbol: coin.symbol,
+                      label: coin.symbol,
+                      companyName: coin.name,
                     });
                     if (!opened) {
                       pushToast('Maximum tabs reached. Close a tab to open a new one.');
                       return;
                     }
-                    onOpenTab?.();
+                    onOpenTab(coin.symbol);
                   }}
                 >
                   <span>
                     <span className="block font-mono text-sm font-medium text-accent">
-                      {stock.symbol}
+                      {coin.symbol}
                     </span>
-                    <span className="block text-xs text-text-secondary">{stock.name}</span>
+                    <span className="block text-xs text-text-secondary">{coin.name}</span>
                   </span>
                   <span className="font-mono text-sm text-text-primary">
-                    {formatCurrency(price ?? 0)}
+                    {formatCurrency(coin.price)}
                   </span>
                 </button>
 
@@ -97,16 +87,16 @@ export default function StockBrowser({
                   className="relative z-10 px-2 text-text-secondary hover:text-accent"
                   aria-label={
                     inWatchlist
-                      ? `Remove ${stock.symbol} from watchlist`
-                      : `Add ${stock.symbol} to watchlist`
+                      ? `Remove ${coin.symbol} from watchlist`
+                      : `Add ${coin.symbol} to watchlist`
                   }
                   onClick={() => {
                     if (inWatchlist) {
-                      removeSymbol(stock.symbol);
-                      pushToast(`${stock.symbol} removed from watchlist`);
+                      removeSymbol(coin.symbol);
+                      pushToast(`${coin.symbol} removed from watchlist`);
                     } else {
-                      addSymbol(stock.symbol);
-                      pushToast(`${stock.symbol} added to watchlist`);
+                      addSymbol(coin.symbol);
+                      pushToast(`${coin.symbol} added to watchlist`);
                     }
                   }}
                 >

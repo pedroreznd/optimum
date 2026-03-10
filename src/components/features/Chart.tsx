@@ -9,14 +9,16 @@ import {
 import Button from '@/components/ui/Button';
 import Skeleton from '@/components/ui/Skeleton';
 import { useStockCandles } from '@/hooks/useStockCandles';
+import { getCryptoMockCandles } from '@/mock/cryptoData';
 import type { MainChartSyncBridge } from '@/lib/chartSync';
 import { theme } from '@/lib/theme';
-import type { CandleDataPoint, Timeframe } from '@/types/finnhub';
+import type { CandleDataPoint, FinnhubCandles, Timeframe } from '@/types/finnhub';
 
 interface ChartProps {
   symbol: string;
   onCandlesChange?: (candles: CandleDataPoint[]) => void;
   onSyncBridgeChange?: (bridge: MainChartSyncBridge | null) => void;
+  market?: 'stocks' | 'crypto';
 }
 
 type ChartMode = 'line' | 'candles';
@@ -27,10 +29,59 @@ export default function Chart({
   symbol,
   onCandlesChange,
   onSyncBridgeChange,
+  market = 'stocks',
 }: ChartProps): JSX.Element {
-  const [timeframe, setTimeframe] = useState<Timeframe>('1D');
+  const [timeframe, setTimeframe] = useState<Timeframe>('1W');
   const [mode, setMode] = useState<ChartMode>('candles');
-  const { candles, loading, error, isEmpty } = useStockCandles(symbol, timeframe);
+  const stockCandlesState = useStockCandles(symbol, timeframe);
+  const [cryptoCandles, setCryptoCandles] = useState<FinnhubCandles | null>(null);
+  const [cryptoLoading, setCryptoLoading] = useState(true);
+  const [cryptoError, setCryptoError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (market !== 'crypto') return;
+
+    let active = true;
+
+    const loadCryptoCandles = async (): Promise<void> => {
+      if (!symbol) {
+        setCryptoCandles(null);
+        setCryptoError(null);
+        setCryptoLoading(false);
+        return;
+      }
+
+      setCryptoLoading(true);
+      setCryptoError(null);
+      try {
+        await new Promise<void>((resolve) => {
+          window.setTimeout(() => resolve(), 300);
+        });
+        if (!active) return;
+        setCryptoCandles(getCryptoMockCandles(symbol, timeframe));
+      } catch (err) {
+        if (!active) return;
+        setCryptoError(err instanceof Error ? err.message : 'Failed to load chart data');
+        setCryptoCandles(null);
+      } finally {
+        if (active) setCryptoLoading(false);
+      }
+    };
+
+    void loadCryptoCandles();
+
+    return () => {
+      active = false;
+    };
+  }, [market, symbol, timeframe]);
+
+  const candles = market === 'crypto' ? cryptoCandles : stockCandlesState.candles;
+  const loading = market === 'crypto' ? cryptoLoading : stockCandlesState.loading;
+  const error = market === 'crypto' ? cryptoError : stockCandlesState.error;
+  const isEmpty =
+    market === 'crypto'
+      ? !cryptoLoading && !cryptoError && cryptoCandles !== null && cryptoCandles.s === 'no_data'
+      : stockCandlesState.isEmpty;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -196,7 +247,11 @@ export default function Chart({
       </div>
 
       <div className="p-3 lg:relative lg:flex-1 lg:min-h-0">
-        {loading && <Skeleton className="h-[360px] w-full" />}
+        {loading && (
+          <div className="h-[360px] w-full lg:absolute lg:inset-0 lg:h-auto">
+            <Skeleton className="h-full w-full" />
+          </div>
+        )}
         {!loading && error && <p className="text-xs text-negative">{error}</p>}
         {!loading && !error && isEmpty && (
           <p className="text-xs text-text-secondary">No chart data available.</p>
