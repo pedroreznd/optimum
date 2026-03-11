@@ -4,6 +4,7 @@ import { useToastStore } from '@/components/ui/Toast';
 import { useStocksTabStore } from '@/store/stocksTabStore';
 import { useWatchlistStore } from '@/store/watchlistStore';
 import { formatCurrency } from '@/lib/utils';
+import { MdOutlineStarPurple500, MdOutlineStarOutline } from 'react-icons/md';
 
 interface StockBrowserProps {
   className?: string;
@@ -110,7 +111,11 @@ export default function StockBrowser({
                     }
                   }}
                 >
-                  {inWatchlist ? '★' : '☆'}
+                  {inWatchlist ? (
+                    <MdOutlineStarPurple500 className="w-4 h-4" />
+                  ) : (
+                    <MdOutlineStarOutline className="w-4 h-4" />
+                  )}
                 </button>
               </li>
             );

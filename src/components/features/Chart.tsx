@@ -23,7 +23,7 @@ interface ChartProps {
 
 type ChartMode = 'line' | 'candles';
 
-const TIMEFRAMES: Timeframe[] = ['1D', '1W', '1M', '3M'];
+const TIMEFRAMES: Timeframe[] = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'];
 
 export default function Chart({
   symbol,

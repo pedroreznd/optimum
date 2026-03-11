@@ -4,6 +4,7 @@ import { useToastStore } from '@/components/ui/Toast';
 import { useCryptoTabStore } from '@/store/cryptoTabStore';
 import { useCryptoWatchlistStore } from '@/store/cryptoWatchlistStore';
 import { formatCurrency } from '@/lib/utils';
+import { MdOutlineStarPurple500, MdOutlineStarOutline } from 'react-icons/md';
 
 interface CryptoBrowserProps {
   className?: string;
@@ -100,7 +101,11 @@ export default function CryptoBrowser({
                     }
                   }}
                 >
-                  {inWatchlist ? '★' : '☆'}
+                  {inWatchlist ? (
+                    <MdOutlineStarPurple500 className="w-4 h-4" />
+                  ) : (
+                    <MdOutlineStarOutline className="w-4 h-4" />
+                  )}
                 </button>
               </li>
             );

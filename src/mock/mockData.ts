@@ -96,6 +96,9 @@ export const getMockCandles = (symbol: string, timeframe: Timeframe): FinnhubCan
     '1W': 5 * 60,
     '1M': 60 * 60,
     '3M': 24 * 60 * 60,
+    '6M': 24 * 60 * 60,
+    '1Y': 24 * 60 * 60,
+    '5Y': 30 * 24 * 60 * 60,
   };
 
   const countByTimeframe: Record<Timeframe, number> = {
@@ -103,6 +106,9 @@ export const getMockCandles = (symbol: string, timeframe: Timeframe): FinnhubCan
     '1W': 390,
     '1M': 720,
     '3M': 90,
+    '6M': 180,
+    '1Y': 365,
+    '5Y': 60,
   };
 
   const count = countByTimeframe[timeframe];
