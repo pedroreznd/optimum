@@ -45,7 +45,7 @@ export interface FinnhubWsMessage {
   type: 'trade' | 'ping';
 }
 
-export type Timeframe = '1D' | '1W' | '1M' | '3M';
+export type Timeframe = '1D' | '1W' | '1M' | '3M' | '6M' | '1Y' | '5Y';
 
 export interface StockListItem {
   symbol: string;
